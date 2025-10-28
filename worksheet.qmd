@@ -4,20 +4,44 @@ format: typst
 
 # Lab 4 Worksheet - Practice
 
+```{r}
+options(repos=c(CRAN = "https://cran.rstudio.com/"))
+install.packages("stringr")
+install.packages("maps")
+```
+
+```{r}
+library(stringr)
+library(maps)
+
+```
 * add something about loading a csv and having to use
 # Split the one column into four
+
+```{r}
 energy_raw <- separate(
   energy_raw,
   col = 1,
   into = c("State", "2021", "2022", "2023"),
   sep = ","
 )
+```
+
 * make sure str extract is clear str_extract(.x, "\\d+\\.?\\d*")
 
 #### Q1. Extract and clean text patterns from strings using regular expressions.
 
 You are given a messy dataset of energy sources with inconsistent units and spacing.
+```{r}
 
+
+
+```
+```{r}
+library(tidyverse)
+library(tidyr)
+library(stringr)
+```
 ```{r}
 energy_sources <- c("Solar (MWh)", "Wind (GWh)", "Coal (MWh)", "Hydro (kWh)")
 ```
@@ -25,24 +49,30 @@ energy_sources <- c("Solar (MWh)", "Wind (GWh)", "Coal (MWh)", "Hydro (kWh)")
 a.  Use str_detect() to identify all energy sources that contain the substring "Wind" or "Hydro" (hint: use the \| operator in regex).
 
 ```{r}
+str_detect(energy_sources,  "Wind | Hydro")
 
 ```
 
 b.  Extract the unit type (e.g., MWh, GWh, kWh) using str_extract(). Make sure your pattern handles extra spaces or hyphens.
 
 ```{r}
-
+unit <- str_extract(energy_sources, "\\w+Wh" )
 ```
 
 c.  Clean the names to keep only the energy source name, trimming whitespace and removing parentheses.
 
 ```{r}
-
+energy_sources <- str_replace(energy_sources, "Solar (MWh)", "Solar")
+energy_sources <- str_replace(energy_sources, "Wind (GWh)", "Wind")
+energy_sources <- str_replace(energy_sources, "Coal (MWh)", "Coal")
+energy_sources <- str_replace(energy_sources, "Hydro (kWh)", "Hydro")
 ```
 
 d.  Create a clean tibble called energy_clean with two columns: source and unit.
 
 ```{r}
+
+energy_clean <- tibble(energy_sources, unit)
 
 ```
 

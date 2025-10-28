@@ -1,7 +1,7 @@
 ---
 title: Clean Energy and Electric Vehicles
 title-prefix: Project 4
-format: stat133handout-typst
+format: typst
 ---
 
 ### **Main Research Question**
