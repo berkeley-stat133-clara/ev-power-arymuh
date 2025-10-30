@@ -8,27 +8,89 @@ format: typst
 ## **Part 0: libraries**
 
 ```{r}
-
+library(maps)
+library(stringr)
+library(tidyverse)
 ```
 
 ## **Part 1:** **Defining Research Question**
 
-Chosen Question:
+Chosen Question: Does the % increase in average energy price per year cause a similar % decrease in total energy usage per year? 
 
 ## **Part 2: Data Preparation and Cleaning**
 
 ```{r}
+#load in data
+energy_price <- read.csv("data/av-energy-price-2021-2023.csv")
+energy_use_21 <- read.csv("data/total-use-2021.csv")
+energy_use_22 <- read.csv("data/total-use-2022.csv")
+
+#Cleaning energy use for 21 and 22
+energy_use_21$Energy_Source <- c("Coal_21", "Natural Gas_21", "Petroleum_21", "Nuclear_21", "Renewable_21")
+
+energy_use_22$Energy_Source <- c("Coal_22", "Natural Gas_22", "Petroleum_22", "Nuclear_22", "Renewable_22")
+
+#energy_price <- str_split(energy_price, ",")
+
+#str_extract(energy_price$2021, "\\d+\\.{1}\\d{2}")
+
+
 
 ```
 
 ## **Part 3: Joining / Pivoting Datasets for Analysis**
 
 ```{r}
+energy_use_21 <- pivot_longer(energy_use_21, cols = c('AK':'US'), names_to = 'State', values_to = 'Energy')
+
+energy_use_21 <- pivot_wider(energy_use_21, names_from = "Energy_Source", values_from = "Energy")
+
+energy_use_22 <- pivot_longer(energy_use_22, cols = c('AK':'US'), names_to = 'State', values_to = 'Energy')
+
+energy_use_22 <- pivot_wider(energy_use_22, names_from = "Energy_Source", values_from = "Energy")
+
+all_data <- left_join(energy_use_21, energy_use_22, by = "State")
+
+all_data <- all_data |>
+    mutate(Total_21 = Coal_21 + `Natural Gas_21` + Petroleum_21 + Nuclear_21 + Renewable_21)
+
+all_data <- all_data |>
+    mutate(Total_22 = Coal_22 + `Natural Gas_22` + Petroleum_22 + Nuclear_22 + Renewable_22)
+
+all_data <- all_data |>
+    mutate(Percent_change = ((Total_22 - Total_21)/Total_21)*100)
+
+all_data <- all_data |>
+    mutate(Percent_change = round(Percent_change, 2))
+
 
 ```
 
 ## **Part 4: Mapping Visualization**
 
 ```{r}
+all_data <- all_data |>
+    mutate(region = tolower(state.name[match(State,state.abb)]))
+
+states_map <- map_data("state")
+
+all_data_2 <- left_join(states_map, all_data, by = "region")
+
+
+ggplot(all_data_2, aes(x = long, y = lat, group = group, fill = Percent_change)) + geom_polygon(color = "white", linewidth = 0.2) + scale_fill_gradient2(
+    low = "red", mid = "white", high = "blue",
+    midpoint = 0,
+    name = "Energy Change (%)"
+  ) +
+  labs(
+    title = "Percent Change in Energy Usage by State",
+    caption = "Negative = Decrease, Positive = Increase"
+  ) +
+  theme_minimal()
+
+
+
+
+
 
 ```
